@@ -14,7 +14,7 @@ from client.sources.common import core
 from client.api.assignment import load_assignment
 from client.cli.common import messages
 from output import DisableStdout 
-from load import load_config, path_to_name, problem_name_from_file
+from load import load_config, path_to_name, problem_name_from_file, problem_name_to_file
 from constants import *
 
 from multiprocessing import Semaphore
@@ -133,7 +133,7 @@ def submit():
     problem_name = request.form['problem_name']
     submitted_code = request.form['submitted_code']
     parsons_repr_code = request.form['parsons_repr_code']
-    fname = f'{PARSONS_FOLDER_PATH}/{problem_name.lower()}.py'
+    fname = problem_name_to_file(problem_name, 'py')
     write_parsons_prob_locally(fname, submitted_code, parsons_repr_code, True)
     test_results = grade_and_backup(problem_name)
     return jsonify({'test_results': test_results})
@@ -302,7 +302,7 @@ def get_useful_syntax_error_logs(logs, problem_name):
     return logs[:traceback_index + 1] + logs[file_index:]
 
 def count_docstring_lines(problem_name):
-    fname = f'{PARSONS_FOLDER_PATH}/{problem_name.lower()}.py'
+    fname = problem_name_to_file(problem_name, 'py')
     num_lines = 0
     with open(fname, "r", encoding="utf8") as f:
         for i, line in enumerate(f):
