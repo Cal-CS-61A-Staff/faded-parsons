@@ -4,33 +4,12 @@ from collections import defaultdict, OrderedDict
 
 import yaml
 
-from constants import PROBLEM_PATHS, UTILITY_FILES, PARSONS_GLOB, PARSONS_FOLDER_PATH 
+from constants import UTILITY_FILES, PARSONS_GLOB, PARSONS_FOLDER_PATH 
 
-def load_config_file(paths):
-  """
-  Loads a YAML file.
-  Args:
-      paths: Either a single path or a list of paths for YAML files.
-
-  Returns: The contents of the YAML file as a defaultdict, returning None
-      for unspecified attributes.
-  """
-  if type(paths) != list:
-    paths = [paths]
-  for path in paths:
-    try:
-      with open(os.path.abspath(path), 'r') as file:
-        config = yaml.load(file, Loader=yaml.Loader)
-      if type(config) == dict:
-        config = defaultdict(lambda: None, config)
-      return config
-    except IOError as e:
-      pass
-  raise Exception("Cannot find files {0}".format(paths))
 
 def load_config(problem_name):
   """
-  Loads a YAML file, assuming that the YAML file is located at {PROBLEM_PATHS}/{problem_name}.yaml
+  Loads a YAML file, assuming that the YAML file is located at {PARSONS_FOLDER_PATH}/{problem_name}.yaml
   Normalizes problem_name to lowercase as all filenames should be lowercased.
    
   Args:
@@ -39,10 +18,16 @@ def load_config(problem_name):
   Returns: The contents of the YAML file as a defaultdict, returning None
       for unspecified attributes.
   """
-  config_files = []
-  for path in PROBLEM_PATHS:
-    config_files.append(os.path.join(os.path.abspath(path), problem_name.lower() + ".yaml"))
-  return load_config_file(config_files)
+  path = os.path.join(os.path.abspath(PARSONS_FOLDER_PATH), problem_name.lower() + ".yaml")
+  try:
+    with open(os.path.abspath(path), 'r') as file:
+      config = yaml.load(file, Loader=yaml.Loader)
+    if type(config) == dict:
+      config = defaultdict(lambda: None, config)
+    return config
+  except IOError as e:
+    pass
+  raise Exception("Cannot find path {0}".format(path))
 
 def problem_name_from_file(filename):
   with open(filename, "r", encoding="utf8") as f:
@@ -54,7 +39,9 @@ def problem_name_from_file(filename):
             name = func_sig[:func_sig.index('(')]
             return name
 
-
+def problem_name_to_file(problem_name, extension):
+  return f'{PARSONS_FOLDER_PATH}/{problem_name.lower()}.{extension}'
+   
 def path_to_name(names_to_paths, path):
     for key, val in names_to_paths.items():
         if val == path:
